@@ -129,15 +129,25 @@ class datagen(Dataset):
             self.returnAllRotations(self.bitseq)
 
         while self.colectedSamples > 0:
-            errBiteseq = addErr(self.bitseq, 1)
+            errBiteseq = addErr(self.bitseq, self.maxErr)
             self.returnAllRotations(errBiteseq)
 
-        print("shape of data")
-        print(np.shape(self.data))
-        print(np.shape(self.output))
-        print(self.colectedSamples)
+        #print("shape of data")
+        
+        #print(np.shape(self.output))
+        #print(self.colectedSamples)
 
-
+        #print(np.shape(self.data))
+        self.data = np.stack(self.data, axis = 0)
+        #print(np.shape(self.data))
+        self.data = np.where(self.data > 0, 1, -1)
+        
+        self.data = np.expand_dims(self.data, axis = 1)
+        self.data = np.array(self.data, dtype=np.float32)
+        #print(np.shape(self.data))
+        #print("-------------")
+        self.output = np.array(self.output, dtype=np.float32)
+        self.output = np.expand_dims(self.output, axis = 1)
 
 
     def returnAllRotations(self, seq, totalLength = 32):
@@ -169,7 +179,7 @@ class datagen(Dataset):
 
     def __getitem__(self, idx):
     
-        sample = {'data': self.data[idx], 'output': self.output[idx]}
+        sample = {'inputs': self.data[idx], 'labels': self.output[idx]}
 
 
         return sample
@@ -177,5 +187,6 @@ class datagen(Dataset):
 
 
 
-x = datagen()
-print(len(x))
+#x = datagen()
+#print(len(x))
+#print(x.__getitem__(6000))
