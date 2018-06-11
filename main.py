@@ -17,13 +17,13 @@ from torch.autograd import Variable
 
 
 BATCH_SIZE  = 64
-DATA_SIZE   = 100000
-TEST_SIZE   = 10000
-MAX_ERRORS  = 100
+DATA_SIZE   = 20000
+TEST_SIZE   = 5000
+MAX_ERRORS  = 0
 
 NUM_EPOCH = 4
 
-PRINT_EVERY = 100
+PRINT_EVERY = 200
 
 trainset = datagen(DATA_SIZE, seed=2018, maxErr=MAX_ERRORS)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
@@ -115,7 +115,8 @@ print("ONEP = %d\nONEN = %d\n" % (ONEP,ONEN))
 
 print('Finished Training')
 
-
+ONEP = 0
+ONEN = 0
 
 correct = 0
 total = 0
@@ -130,13 +131,11 @@ with torch.no_grad():
         #print(labels-outputs)
         absErr = np.abs(labels-outputs)
         select = np.where(absErr < 0.5, 1, 0)
-
         
 
         #print("input %f - %f output" % (labels, outputs))
         total += labels.size(0)
         correct += np.count_nonzero(select)
-
 print('Accuracy of the network on the 10000 test images: %f %%' % (
     100 * correct / total))
 

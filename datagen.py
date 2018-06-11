@@ -37,11 +37,23 @@ def addErr(bitseq, numErr = 1):
     """
     seq = np.copy(bitseq)
     a = np.shape(seq)
+    points = []
+    i = 0
 
-    for i in range(0,numErr):
+    if numErr > np.size(bitseq) * 0.6:
+        warn("Lot of errors, may get stuck in while")
 
+    while i < numErr:
         x = random.randint(0,a[0]-1)
         y = random.randint(0,a[1]-1)
+        
+        if (x,y) in points:
+            continue
+        else:
+            points.append((x,y))
+        i += 1
+
+    for (x,y) in points:
 
         if seq[x][y] == 0:
             seq[x][y] = 1

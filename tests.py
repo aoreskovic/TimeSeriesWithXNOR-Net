@@ -35,14 +35,37 @@ def seq2bit(seq):
             bitseq = np.concatenate((bitseq, bits),1)
     return bitseq
 
+
+    
+    
 def addErr(bitseq, numErr = 1):
+    """Adds an error (flips a bit) in an input sequence
+    
+    Arguments:
+        bitseq {array} -- Array of 0 and 1 in which you want to add an error
+    
+    Keyword Arguments:
+        numErr {int} -- Number of errors you want to introduce (default: {1})
+    """
     seq = np.copy(bitseq)
     a = np.shape(seq)
+    points = []
+    i = 0
 
-    for i in range(0,numErr):
+    if numErr > np.size(bitseq) * 0.6:
+        warn("Lot of errors, may get stuck in while")
 
+    while i < numErr:
         x = random.randint(0,a[0]-1)
         y = random.randint(0,a[1]-1)
+        
+        if (x,y) in points:
+            continue
+        else:
+            points.append((x,y))
+        i += 1
+
+    for (x,y) in points:
 
         if seq[x][y] == 0:
             seq[x][y] = 1
@@ -52,9 +75,6 @@ def addErr(bitseq, numErr = 1):
             warn("This shouldunt be anything othera than 0 or 1, it is %d" % seq[x][y])
 
     return seq
-    
-    
-
 
 
 print("\n\n seq2bit:\n")
@@ -122,10 +142,7 @@ print("bulk shape")
 print(np.shape(bulk))
 #print(np.shape(np.stack(bulk, axis = 0)))
 #print(np.stack(bulk, axis = 0))
-print("bitseq")
-print(bitseq)
-print(bulk[0])
-print(bulk[19])
+
 
 print("\n return all rotations")
 bulfrm = returnAllRotations(bitseq)
@@ -138,6 +155,12 @@ paddd = paddingSeq(32)
 print(paddd)
 print(np.shape(paddd))
 
+
+print("bitseq")
+print(bitseq)
+errbitseq =addErr(bitseq,30)
+print(errbitseq)
+print(bitseq-errbitseq)
 
 
 news = []
