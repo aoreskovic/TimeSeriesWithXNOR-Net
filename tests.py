@@ -133,6 +133,13 @@ print(np.shape(bulfrm))
 print(bulfrm[0])
 print(bulfrm[-1])
 
+
+paddd = paddingSeq(32)
+print(paddd)
+print(np.shape(paddd))
+
+
+
 news = []
 for i in range(1,20):
     numbers = np.array(random.getrandbits(3), dtype=np.uint8)
