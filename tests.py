@@ -1,9 +1,9 @@
 import random
+from warnings import warn
+
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader
-
-from warnings import warn
+from torch.utils.data import DataLoader, Dataset
 
 # For the repeatability
 random.seed(2018)
@@ -36,7 +36,7 @@ def seq2bit(seq):
     return bitseq
 
 def addErr(bitseq, numErr = 1):
-    seq = bitseq
+    seq = np.copy(bitseq)
     a = np.shape(seq)
 
     for i in range(0,numErr):
@@ -59,14 +59,79 @@ def addErr(bitseq, numErr = 1):
 
 print("\n\n seq2bit:\n")
 bitseq = seq2bit(sequence)
-print(seq2bit(sequence))
+print(bitseq)
 print()
 arry = np.array(addErr(bitseq,20),dtype=np.int8)
-print(arry)
+#print(arry)
+print("shift right")
+print(np.roll(arry,1,axis=1))
+print("bitesq after roll and god knows")
+print(bitseq)
 
 
+def paddingSeq(width):
+    seq = []
+    for i in range(width):
+        num = np.array(random.getrandbits(3), dtype=np.uint8)
+        bits = np.unpackbits(num)
+        bits = bits[-3:]
+        bits = np.vstack(bits)
+        if i == 0:
+            seq = bits
+        else:
+            seq = np.concatenate((seq, bits),1)
+    return seq
+
+#print("\nPAdding seq 3") 
+#print(paddingSeq(6))
+
+#print("padding")
+
+padded = np.concatenate((arry, paddingSeq(20)), axis=1)
+#print(padded)
+#print(np.shape(padded))
+
+def returnAllRotations(seq, totalLength = 32):
+    inLength = np.shape(seq)[1]
+    seqLength = totalLength - inLength
+    print("\nReturn all rotations")
+    print(seqLength)
+    if seqLength <= 0:
+        warn("Total sequence length <= 0")
+    padding = paddingSeq(seqLength)
+    padding = np.zeros((3,seqLength))
+    padded = np.concatenate((seq, padding), axis=1)
+    bulk = []
+
+    for i in range(0,seqLength + 1):
+        bulk.append(np.roll(padded,i,axis=1))
+    return np.stack(bulk, axis = 0)
 
 
+print("bulking")
+bulk = []
+print("bitseq")
+print(bitseq)
+for i in range(0,20):
+    padded = np.concatenate((bitseq, np.zeros((3,20))), axis=1)
+    bulk.append(np.roll(padded,i,axis=1))
+
+
+np.set_printoptions(linewidth=200)
+print("bulk shape")
+print(np.shape(bulk))
+#print(np.shape(np.stack(bulk, axis = 0)))
+#print(np.stack(bulk, axis = 0))
+print("bitseq")
+print(bitseq)
+print(bulk[0])
+print(bulk[19])
+
+print("\n return all rotations")
+bulfrm = returnAllRotations(bitseq)
+print(np.shape(bulfrm))
+print(bulfrm[0])
+print(bulfrm[-1])
 
 news = []
 for i in range(1,20):
@@ -80,17 +145,3 @@ for i in range(1,20):
         news = np.concatenate((news, bits),1)
 
 
-
-def seq2bit(seq):
-    bitseq = []
-    flag = 0
-    for nuber in seq:
-        bits = np.unpackbits(nuber)
-        bits = bits[-3:]
-        bits = np.vstack(bits)
-        if flag == 0:
-            bitseq = bits
-            flag = 1
-        else:
-            bitseq = np.concatenate((bitseq, bits),1)
-    return bitseq

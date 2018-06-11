@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
+from warnings import warn
 
 # For the repeatability
 random.seed(2018)
@@ -22,9 +23,10 @@ for i in range(1,20):
 
 print(news)
 
-"""
-seq2bit: returns bit vector of input array
-"""
+
+
+
+
 def seq2bit(seq):
     bitseq = []
     flag = 0
@@ -39,8 +41,19 @@ def seq2bit(seq):
             bitseq = np.concatenate((bitseq, bits),1)
     return bitseq
 
+
+
+
 def addErr(bitseq, numErr = 1):
-    seq = bitseq
+    """Adds an error (flips a bit) in an input sequence
+    
+    Arguments:
+        bitseq {array} -- Array of 0 and 1 in which you want to add an error
+    
+    Keyword Arguments:
+        numErr {int} -- Number of errors you want to introduce (default: {1})
+    """
+    seq = np.copy(bitseq)
     a = np.shape(seq)
 
     for i in range(0,numErr):
@@ -58,13 +71,49 @@ def addErr(bitseq, numErr = 1):
     return seq
 
 
+
+def paddingSeq(width):
+    """ Generates sequence of bits size of width x 3
+    
+    Arguments:
+        width {int} -- [description]
+    """
+    seq = []
+    for i in range(width):
+        num = np.array(random.getrandbits(3), dtype=np.uint8)
+        bits = np.unpackbits(num)
+        bits = bits[-3:]
+        bits = np.vstack(bits)
+        if i == 0:
+            seq = bits
+        else:
+            seq = np.concatenate((seq, bits),1)
+    return seq
+
+
+def returnAllRotations(seq, totalLength = 32):
+    inLength = np.shape(seq)[1]
+    seqLength = totalLength - inLength
+    print("\nReturn all rotations")
+    print(seqLength)
+    if seqLength <= 0:
+        warn("Total sequence length <= 0")
+    padding = paddingSeq(seqLength)
+    padding = np.zeros((3,seqLength))
+    padded = np.concatenate((seq, padding), axis=1)
+    bulk = []
+
+    for i in range(0,seqLength + 1):
+        bulk.append(np.roll(padded,i,axis=1))
+    return np.stack(bulk, axis = 0)
+
+
 class datagen(Dataset):
     def __init__(self, numSamples=10000, seed=2018, maxErr = 1, errP = 0.5):
         """
         Args:
             numSamples: number of samples to generate
         """
-
         self.sequence = [5, 7, 0, 3, 6, 6, 4, 7, 5, 0, 4, 2]
         self.bit2seq = seq2bit(self.sequence)
         
@@ -73,8 +122,7 @@ class datagen(Dataset):
         self.maxErr = maxErr
         self.errP = errP
 
-
-        for i in range(0,numSamples-1):
+        for i in range(numSamples):
             pass
 
 
