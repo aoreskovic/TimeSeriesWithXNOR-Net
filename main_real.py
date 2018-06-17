@@ -14,21 +14,22 @@ import torch.optim as optim
 
 from torch.autograd import Variable
 
-
+np.set_printoptions(linewidth=200)
 
 BATCH_SIZE  = 64
 DATA_SIZE   = 20000
 TEST_SIZE   = 5000
-MAX_ERRORS  = 0
+MAX_ERRORS  = 4
 
-NUM_EPOCH = 4
+NUM_EPOCH = 10
 
 PRINT_EVERY = 200
-
+print("Train data")
 trainset = datagen(DATA_SIZE, seed=2018, maxErr=MAX_ERRORS)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
 
-testset = datagen(TEST_SIZE, seed=2019, maxErr=MAX_ERRORS)
+print("Test data")
+testset = datagen(TEST_SIZE, seed=1231231, maxErr=MAX_ERRORS)
 testloader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
 
@@ -59,7 +60,7 @@ net = Net()
 
 criterion = nn.MSELoss()
 #optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-optimizer = optim.Adam(net.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+optimizer = optim.Adam(net.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.3)
 
 ONEP = 0
 ONEN = 0
@@ -136,6 +137,20 @@ with torch.no_grad():
         #print("input %f - %f output" % (labels, outputs))
         total += labels.size(0)
         correct += np.count_nonzero(select)
+# TODO see as to on which parameters it works bad when eight decay is introduced
 print('Accuracy of the network on the 10000 test images: %f %%' % (
     100 * correct / total))
 
+np.set_printoptions(linewidth=200)
+print("\nParam data")
+for param in net.parameters():
+  print(param.data)
+
+
+for param in net.parameters():
+  param.data = np.where(param > 0, 1, -1)
+
+np.set_printoptions(linewidth=200)
+print("\nParam data")
+for param in net.parameters():
+  print(param.data)

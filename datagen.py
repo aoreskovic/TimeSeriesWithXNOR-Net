@@ -21,7 +21,7 @@ def seq2bit(seq):
             flag = 1
         else:
             bitseq = np.concatenate((bitseq, bits),1)
-    return bitseq
+    return np.copy(bitseq)
 
 
 
@@ -62,7 +62,7 @@ def addErr(bitseq, numErr = 1):
         else:
             warn("This shouldunt be anything othera than 0 or 1, it is %d" % seq[x][y])
 
-    return seq
+    return np.copy(seq)
 
 
 
@@ -85,7 +85,8 @@ def paddingSeq(width):
     return seq
 
 
-def returnAllRotations(seq, totalLength = 32):
+def returnAllRotations(bitseq, totalLength = 32):
+    seq = np.copy(bitseq)
     inLength = np.shape(seq)[1]
     seqLength = totalLength - inLength
     print("\nReturn all rotations")
@@ -104,9 +105,16 @@ def returnAllRotations(seq, totalLength = 32):
 
 class datagen(Dataset):
     def __init__(self, numSamples=10000, seed=2018, maxErr = 1, errP = 0.5):
-        """
-        Args:
-            numSamples: number of samples to generate
+        """Klasa za generiranje podataka koji simulriaju detektore
+        
+        Arguments:
+            Dataset {class} -- Naslijedjena klasa za ucitavanje podataka
+        
+        Keyword Arguments:
+            numSamples {int} -- Broj uzoraka koji ce se generirati (default: {10000})
+            seed {int} -- Inicijalizacijija generatora nasumičnih brojeva (default: {2018})
+            maxErr {int} -- Najveći broj gresaka koji ce se dodati u testne signale (default: {1})
+            errP {float} -- ? (default: {0.5})
         """
         self.sequence = [5, 7, 0, 3, 6, 6, 4, 7, 5, 0, 4, 2]
         self.bitseq = seq2bit(self.sequence)
@@ -123,7 +131,7 @@ class datagen(Dataset):
 
     def generateData(self):
         random.seed(self.seed)
-        negativeSamples  = self.numSamples//2
+        negativeSamples  = self.numSamples//4
 
         self.data = []
         self.output = []
@@ -137,12 +145,16 @@ class datagen(Dataset):
         #print(np.shape(self.data))
 
 
-        while self.colectedSamples > self.numSamples//4:
+        while self.colectedSamples > self.numSamples//2:
             self.returnAllRotations(self.bitseq)
+
+        #print(np.shape(self.data))
 
         while self.colectedSamples > 0:
             errBiteseq = addErr(self.bitseq, self.maxErr)
             self.returnAllRotations(errBiteseq)
+
+        #print(np.shape(self.data))
 
         #print("shape of data")
         
