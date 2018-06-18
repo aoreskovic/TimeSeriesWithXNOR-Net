@@ -8,6 +8,7 @@ import numpy as np
 from datagen import datagen
 import util
 
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -20,14 +21,14 @@ import os
 np.set_printoptions(linewidth=200)
 
 BATCH_SIZE  = 64
-DATA_SIZE   = 2000
+DATA_SIZE   = 200000
 TEST_SIZE   = 10000
 MAX_ERRORS  = 4
 
-NUM_EPOCH = 50
+NUM_EPOCH = 200
 
-LEARNING_RATE = 0.0001
-WEIGHT_DECAY = 0.00001
+LEARNING_RATE = 0.0002
+WEIGHT_DECAY = 0.00002
 
 PRINT_EVERY = 100
 
@@ -74,7 +75,7 @@ optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE, betas=(0.9, 0.999), e
 
 ONEP = 0
 ONEN = 0
-
+best_result = 100000
 
 for epoch in range(NUM_EPOCH):  # loop over the dataset multiple times
 
@@ -137,6 +138,18 @@ for epoch in range(NUM_EPOCH):  # loop over the dataset multiple times
             running_mse      = 0.0
             running_distance = 0.0
 
+
+        if running_loss < best_result:
+            is_best = True
+            best_result = running_loss
+
+        util.save_checkpoint({
+            'epoch': epoch + 1,
+            'state_dict': net.state_dict(),
+            'best_prec1': best_result,
+            'optimizer' : optimizer.state_dict(),
+        }, is_best)
+
 print("ONEP = %d\nONEN = %d\n" % (ONEP,ONEN))
 
 print('Finished Training')
@@ -178,5 +191,4 @@ for param in net.parameters():
 np.set_printoptions(linewidth=200)
 print("\nParam data")
 for param in net.parameters():
-  #print(param.data)
-  pass
+  print(param.data)

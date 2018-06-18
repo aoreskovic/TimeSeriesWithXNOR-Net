@@ -4,7 +4,7 @@ from torch.autograd import Variable
 from torch.nn import functional as F
 
 
-
+import shutil
 
 class _BinActive(torch.autograd.Function):
 
@@ -67,3 +67,10 @@ def DistanceFromPenalty(netParams, what):
         sum += torch.pow(torch.sum(what-torch.abs(param)),2)
         #sum += torch.abs(torch.sum(what-torch.abs(param)))
     return sum
+
+
+
+def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+    torch.save(state, filename)
+    if is_best:
+        shutil.copyfile(filename, 'net_best.pth.tar')
