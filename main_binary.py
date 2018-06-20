@@ -19,11 +19,11 @@ np.set_printoptions(linewidth=200)
 # ---------- Hyperparameters ----------
 
 BATCH_SIZE = 64
-DATA_SIZE = 200000
-TEST_SIZE = 10000
+DATA_SIZE = 10000
+TEST_SIZE = 1000
 MAX_ERRORS = 4
 
-NUM_EPOCH = 200
+NUM_EPOCH = 50
 
 LEARNING_RATE = 0.0002
 WEIGHT_DECAY = 0.00002
@@ -49,8 +49,8 @@ testloader = torch.utils.data.DataLoader(
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = util.BinConv2D(1, 4, (3, 8))
-        self.fc1 = util.BinLinear(25*4, 1)
+        self.conv1 = util.BinConv2D(1, 4, (3, 8), bias=True)
+        self.fc1 = util.BinLinear(25*4, 1, bias=True)
 
     def forward(self, x):
         x, error1 = self.conv1(x)
@@ -60,6 +60,7 @@ class Net(nn.Module):
 
 
 net = Net()
+
 
 # ---------- Cost function ----------
 
@@ -95,13 +96,11 @@ for epoch in range(NUM_EPOCH):
         # TODO komentirati ovu tehniku
 
         if epoch < 20:
-            distanceFrom1Cost = WEIGHT_DECAY * \
-                util.DistanceFromPenalty(net.parameters(), 1)
+            distanceFrom1Cost = WEIGHT_DECAY * util.DistanceFromPenalty(net.parameters(), 1)
             MSEcost = criterion(outputs, labels)
             loss = MSEcost
         else:
-            distanceFrom1Cost = WEIGHT_DECAY * \
-                util.DistanceFromPenalty(net.parameters(), 1)
+            distanceFrom1Cost = WEIGHT_DECAY * util.DistanceFromPenalty(net.parameters(), 1)
             MSEcost = criterion(outputs, labels)
             loss = MSEcost + distanceFrom1Cost
 
@@ -123,12 +122,14 @@ for epoch in range(NUM_EPOCH):
             is_best = True
             best_result = running_loss
 
+"""
         util.save_checkpoint({
             'epoch': epoch + 1,
             'state_dict': net.state_dict(),
             'best_prec1': best_result,
             'optimizer': optimizer.state_dict(),
         }, is_best)
+"""
 
 
 print('Finished Training')
@@ -172,3 +173,27 @@ for param in net.parameters():
 print("\nParam data")
 for param in net.parameters():
     print(param.data)
+
+
+correct = 0
+total = 0
+with torch.no_grad():
+    for data in testloader:
+        inputs, labels = data
+
+        inputs = data["inputs"]
+        labels = data["labels"]
+
+        outputs, error1, error2 = net(inputs)
+
+        absErr = np.abs(labels-outputs)
+        select = np.where(absErr < 0.5, 1, 0)
+
+        total += labels.size(0)
+        correct += np.count_nonzero(select)
+
+
+# ---------- Printing the accuracy and results ----------
+
+print('Accuracy of the binarized network on the 10000 test images: %f %%' % (
+    100 * correct / total))

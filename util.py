@@ -36,7 +36,9 @@ class BinConv2D(nn.Module):
         of standard 2D convolution
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=0):
+    def __init__(self, in_channels, out_channels, 
+                kernel_size=3, stride=1, padding=0,
+                bias=False):
         super().__init__()
         self.conv = nn.Conv2d(
             in_channels=in_channels,
@@ -44,7 +46,7 @@ class BinConv2D(nn.Module):
             kernel_size=kernel_size,
             stride=stride,
             padding=padding,
-            bias=False)
+            bias=bias)
         self.activ = BinActive()
 
     def forward(self, x):
@@ -61,7 +63,7 @@ class BinLinear(nn.Module):
 
     def __init__(self, in_features, out_features, bias=False):
         super().__init__()
-        self.linear = nn.Linear(in_features, out_features, bias=True)
+        self.linear = nn.Linear(in_features, out_features, bias=bias)
         self.activ = BinActive()
 
     def forward(self, x):
@@ -79,10 +81,13 @@ def DistanceFromPenalty(netParams, what):
         what {int} -- calculate distance from which number
     """
     sum = 0
+    i = 0
     for param in netParams:
-        distance = what-torch.abs(param)
-        distance_squared = torch.pow(distance, 2)
-        sum += torch.sum(distance_squared)
+        if (i % 2) == 0:
+            distance = what-torch.abs(param)
+            distance_squared = torch.pow(distance, 2)
+            sum += torch.sum(distance_squared)
+        i += 1
     return sum
 
 
