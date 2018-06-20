@@ -146,9 +146,9 @@ class datagen(Dataset):
 
         # print(np.shape(self.data))
 
-        while self.colectedSamples > self.numSamples//5:
-            errBiteseq = addErr(self.bitseq, self.maxErr)
-            self.returnAllRotations(errBiteseq)
+        #while self.colectedSamples > self.numSamples//5:
+        #    errBiteseq = addErr(self.bitseq, self.maxErr)
+        #    self.returnAllRotations(errBiteseq)
 
         # TODO ovdje dodati full padding
         while self.colectedSamples > 0:

@@ -13,7 +13,7 @@ from torch.autograd import Variable
 import util
 from datagen import datagen
 
-np.set_printoptions(linewidth=200)
+np.set_printoptions(linewidth=300)
 
 
 # ---------- Hyperparameters ----------
@@ -23,7 +23,8 @@ DATA_SIZE = 10000
 TEST_SIZE = 1000
 MAX_ERRORS = 4
 
-NUM_EPOCH = 50
+NUM_EPOCH = 100
+REGULARIZATION_START = 40
 
 LEARNING_RATE = 0.0002
 WEIGHT_DECAY = 0.00002
@@ -51,6 +52,7 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.conv1 = util.BinConv2D(1, 4, (3, 8), bias=True)
         self.fc1 = util.BinLinear(25*4, 1, bias=True)
+
 
     def forward(self, x):
         x, error1 = self.conv1(x)
@@ -95,7 +97,7 @@ for epoch in range(NUM_EPOCH):
 
         # TODO komentirati ovu tehniku
 
-        if epoch < 20:
+        if epoch < REGULARIZATION_START:
             distanceFrom1Cost = WEIGHT_DECAY * util.DistanceFromPenalty(net.parameters(), 1)
             MSEcost = criterion(outputs, labels)
             loss = MSEcost
@@ -165,9 +167,14 @@ print("\nParam data")
 for param in net.parameters():
     print(param.data)
 
-
+i = 0
 for param in net.parameters():
-    param.data = torch.sign(param)
+    if (i % 2) == 0:
+        param.data = torch.sign(param)
+    else:
+        #param.data = torch.round(param)ž
+        pass
+    i +=1
 
 
 print("\nParam data")
