@@ -13,14 +13,16 @@ from torch.autograd import Variable
 import util
 from datagen import datagen
 
+from matplotlib import pyplot as plt
+
 np.set_printoptions(linewidth=300)
 
 
 # ---------- Hyperparameters ----------
 
 BATCH_SIZE = 64
-DATA_SIZE = 200000
-TEST_SIZE = 5000
+DATA_SIZE = 10000
+TEST_SIZE = 1000
 MAX_ERRORS = 4
 
 NUM_EPOCH = 200
@@ -29,7 +31,7 @@ REGULARIZATION_START = 40
 LEARNING_RATE = 0.0002
 WEIGHT_DECAY = 0.002
 
-PRINT_EVERY = 500
+PRINT_EVERY = 50
 
 
 # ---------- Loading data ----------
@@ -76,6 +78,19 @@ optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE,
 
 best_result = 100000
 
+plt.axis('tight')
+plt.ylim(ymin=0)
+plt.ion()
+plt.show()
+
+
+
+array_loss = list()
+array_MSE = list()
+array_distance = list()
+
+
+
 # ---------- Training ----------
 for epoch in range(NUM_EPOCH):
 
@@ -113,13 +128,35 @@ for epoch in range(NUM_EPOCH):
         running_loss += loss.item()
         running_mse += MSEcost.item()
         running_distance += distanceFrom1Cost.item()
-        if i % PRINT_EVERY == PRINT_EVERY-1:    # print every 2000 mini-batches
+        if i % PRINT_EVERY == PRINT_EVERY-1:   
             print('[%2d, %5d] loss: %.4f  MSE: %.4f  Dist: %.4f' %
                   (epoch + 1, i + 1, running_loss / PRINT_EVERY, running_mse / PRINT_EVERY, running_distance / PRINT_EVERY))
+
+            
+            array_loss.append(running_loss / PRINT_EVERY)
+            array_MSE.append(running_mse / PRINT_EVERY)
+            array_distance.append( running_distance / PRINT_EVERY)
+            x_axis = range(len(array_loss))
+
+
+            plt.clf()
+            plt.axis([0, max(x_axis), 0, 1])
+            plt.title("Prikaz funkcija cijena")
+            lines = plt.plot(x_axis, array_MSE, 'b', x_axis, array_loss, 'r',  x_axis, array_distance, 'g')
+            plt.setp(lines, linewidth=0.8, antialiased=True)
+            plt.legend(('MSE', 'Ukupni', 'Udaljenost od +-1'))
+            plt.draw()
+            plt.pause(0.01)
+
+
             running_loss = 0.0
             running_mse = 0.0
             running_distance = 0.0
+
+            
             #util.PrintDistanceFrom(net.parameters(),1)
+
+        
 
         if running_loss < best_result:
             is_best = True
@@ -133,6 +170,7 @@ for epoch in range(NUM_EPOCH):
             'optimizer': optimizer.state_dict(),
         }, is_best)
 """
+
 
 
 print('Finished Training')
@@ -205,3 +243,5 @@ with torch.no_grad():
 
 print('Accuracy of the binarized network on the 10000 test images: %f %%' % (
     100 * correct / total))
+
+input("Press [enter] to continue.")
