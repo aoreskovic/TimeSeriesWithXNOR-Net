@@ -50,8 +50,7 @@ class BinConv2D(nn.Module):
         self.activ = BinActive()
 
     def forward(self, x):
-        x1 = self.activ(x)
-        x2 = self.conv(x1)
+        x2 = self.conv(x)
         x3 = self.activ(x2)
         return x3, x2
 
@@ -67,8 +66,7 @@ class BinLinear(nn.Module):
         self.activ = BinActive()
 
     def forward(self, x):
-        x1 = self.activ(x)
-        x2 = self.linear(x1)
+        x2 = self.linear(x)
         x3 = self.activ(x2)
         return x3, x2
 
@@ -87,6 +85,19 @@ def DistanceFromPenalty(netParams, what):
             distance = what-torch.abs(param)
             distance_squared = torch.pow(distance, 2)
             sum += torch.sum(distance_squared)
+        i += 1
+    return sum
+
+
+def PrintDistanceFrom(netParams, what):
+    i = 0
+    print("---- Distance from 1 ----")
+    for param in netParams:
+        if (i % 2) == 0:
+            distance = what-torch.abs(param)
+            distance_squared = torch.pow(distance, 2)
+            sum = torch.sum(distance_squared)
+            print(sum)
         i += 1
     return sum
 

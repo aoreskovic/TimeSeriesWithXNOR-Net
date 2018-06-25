@@ -19,17 +19,17 @@ np.set_printoptions(linewidth=300)
 # ---------- Hyperparameters ----------
 
 BATCH_SIZE = 64
-DATA_SIZE = 10000
-TEST_SIZE = 1000
+DATA_SIZE = 200000
+TEST_SIZE = 5000
 MAX_ERRORS = 4
 
-NUM_EPOCH = 100
+NUM_EPOCH = 200
 REGULARIZATION_START = 40
 
 LEARNING_RATE = 0.0002
-WEIGHT_DECAY = 0.00002
+WEIGHT_DECAY = 0.002
 
-PRINT_EVERY = 100
+PRINT_EVERY = 500
 
 
 # ---------- Loading data ----------
@@ -119,6 +119,7 @@ for epoch in range(NUM_EPOCH):
             running_loss = 0.0
             running_mse = 0.0
             running_distance = 0.0
+            #util.PrintDistanceFrom(net.parameters(),1)
 
         if running_loss < best_result:
             is_best = True
