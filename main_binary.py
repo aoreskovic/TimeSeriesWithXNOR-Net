@@ -21,14 +21,14 @@ np.set_printoptions(linewidth=300)
 # ---------- Hyperparameters ----------
 
 BATCH_SIZE = 64
-DATA_SIZE = 10000
-TEST_SIZE = 1000
-MAX_ERRORS = 4
+DATA_SIZE = 20000
+TEST_SIZE = 10000
+MAX_ERRORS = 6
 
 NUM_EPOCH = 200
 REGULARIZATION_START = 40
 
-LEARNING_RATE = 0.0002
+LEARNING_RATE = 0.002
 WEIGHT_DECAY = 0.002
 
 PRINT_EVERY = 50
@@ -144,7 +144,7 @@ for epoch in range(NUM_EPOCH):
             plt.title("Prikaz funkcija cijena")
             lines = plt.plot(x_axis, array_MSE, 'b', x_axis, array_loss, 'r',  x_axis, array_distance, 'g')
             plt.setp(lines, linewidth=0.8, antialiased=True)
-            plt.legend(('MSE', 'Ukupni', 'Udaljenost od +-1'))
+            plt.legend(('MSE', 'Ukupna cijena', 'Udaljenost od +-1'))
             plt.draw()
             plt.pause(0.01)
 

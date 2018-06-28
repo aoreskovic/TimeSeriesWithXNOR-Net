@@ -84,6 +84,25 @@ def paddingSeq(width):
     return seq
 
 
+def constSeq(width):
+    """ Generates sequence of bits size of width x 3
+
+    Arguments:
+        width {int} -- [description]
+    """
+    seq = []
+    num = np.array(random.getrandbits(3), dtype=np.uint8)
+    for i in range(width):
+        bits = np.unpackbits(num)
+        bits = bits[-3:]
+        bits = np.vstack(bits)
+        if i == 0:
+            seq = bits
+        else:
+            seq = np.concatenate((seq, bits), 1)
+    return seq
+
+
 def returnAllRotations(bitseq, totalLength=32):
     seq = np.copy(bitseq)
     inLength = np.shape(seq)[1]
@@ -103,7 +122,7 @@ def returnAllRotations(bitseq, totalLength=32):
 
 
 class datagen(Dataset):
-    def __init__(self, numSamples=10000, seed=2018, maxErr=1, errP=0.5):
+    def __init__(self, numSamples=10000, seed=2018, maxErr=1, pNoise=0.50, pConst=0.0, pClear=0.25, pError=0.25):
         """Klasa za generiranje podataka koji simulriaju detektore
 
         Arguments:
@@ -115,42 +134,59 @@ class datagen(Dataset):
             maxErr {int} -- Najveći broj gresaka koji ce se dodati u testne signale (default: {1})
             errP {float} -- ? (default: {0.5})
         """
+        if (pNoise + pConst + pClear + pError) != 0:
+            EnvironmentError("Sum of percentages is not 1")
+
         self.sequence = [5, 7, 0, 3, 6, 6, 4, 7, 5, 0, 4, 2]
         self.bitseq = seq2bit(self.sequence)
+
+        self.pNoise = pNoise
+        self.pConst = pConst
+        self.pClear = pClear
+        self.pError = pError
 
         self.numSamples = numSamples
         self.colectedSamples = numSamples
         self.seed = seed
         self.maxErr = maxErr
-        self.errP = errP
 
         self.generateData()
 
     def generateData(self):
         random.seed(self.seed)
-        negativeSamples = self.numSamples//4
+
+        noiseSamples = round(self.numSamples * self.pNoise)
+        constSamples = round(self.numSamples * self.pConst)
+        clearSamples = round(self.numSamples * self.pClear)
+        errorSamples = round(self.numSamples * self.pError)
 
         self.data = []
         self.output = []
 
-        for i in range(negativeSamples):
+        for i in range(noiseSamples):
             self.colectedSamples -= 1
             self.data.append(paddingSeq(32))
+            self.output.append(-1)
+
+
+        for i in range(constSamples):
+            self.colectedSamples -= 1
+            self.data.append(constSeq(32))
             self.output.append(-1)
 
         #self.data = np.stack(self.data, axis = 0)
         # print(np.shape(self.data))
 
-        while self.colectedSamples > self.numSamples//2:
+        self.colectedSamples = clearSamples
+        while self.colectedSamples > 0:
             self.returnAllRotations(self.bitseq)
 
         # print(np.shape(self.data))
 
-        #while self.colectedSamples > self.numSamples//5:
-        #    errBiteseq = addErr(self.bitseq, self.maxErr)
-        #    self.returnAllRotations(errBiteseq)
 
         # TODO ovdje dodati full padding
+
+        self.colectedSamples = errorSamples
         while self.colectedSamples > 0:
             errBiteseq = addErr(self.bitseq, self.maxErr)
             self.returnAllRotations(errBiteseq)
